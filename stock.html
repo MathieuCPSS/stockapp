@@ -41,114 +41,110 @@
 <button onclick="startScanner()">📷 Scanner un code</button>
 <div id="reader" style="width:300px; margin-top:10px;"></div>
   <script>
-    let items = [];
-    let currentFilter = ''; // garde la requête de recherche courante
+  let items = [];
+  let currentFilter = '';
 
-    // Utilitaire: normalise pour recherche (sans accents, en minuscule)
-    function normalize(str) {
-      return (str || '')
-        .toString()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .toLowerCase()
-        .trim();
-    }
-
-    function renderItems(list = items) {
-      const container = document.getElementById('items');
-      container.innerHTML = '';
-      document.getElementById('countInfo').textContent = `(${list.length} affiché(s) / ${items.length} total)`;
-
-      if (list.length === 0) {
-        container.innerHTML = '<p>Aucun article en stock</p>';
-      } else {
-        list.forEach(item => {
-          container.innerHTML += `
-            <div class="item">
-              <div class="info">
-                <strong>${item.name}</strong> — Fournisseur: ${item.supplier}<br>
-                Prix: ${Number(item.price).toFixed(2)} € • Stock: ${item.quantity}
-              </div>
-              <div>
-                <button onclick="editItem(${item.id})">✏️ Modifier</button>
-                <button onclick="deleteItem(${item.id})">🗑️ Supprimer</button>
-              </div>
-            </div>`;
-        });
-      }
-    }
-
-    function applyFilter() {
-      const q = normalize(currentFilter);
-      if (!q) {
-        renderItems(items);
-        return;
-      }
-      const filtered = items.filter(i =>
-        normalize(i.name).includes(q) ||
-        normalize(i.supplier).includes(q)
-      );
-      renderItems(filtered);
-    }
-
-    function addCustomItem() {
-      const newItem = {
-        id: Date.now(),
-        name: document.getElementById('name').value || 'Article',
-        supplier: document.getElementById('supplier').value || 'Inconnu',
-        price: parseFloat(document.getElementById('price').value) || 0,
-        quantity: parseInt(document.getElementById('quantity').value) || 0,
-        code: document.getElementById('code').value || '' // ✅ nouveau champ
-      };
-      items.push(newItem);
-      saveItems();
-      // Réinitialiser le formulaire
-      document.getElementById('name').value = '';
-      document.getElementById('supplier').value = '';
-      document.getElementById('price').value = '';
-      document.getElementById('quantity').value = '';
-      document.getElementById('code').value = ''; // ✅ reset du champ
-      // Réappliquer le filtre pour garder la vue cohérente
-      applyFilter();
-    }
-
- async function deleteItem(id) {
-  // Appel à l'API pour supprimer l'article
-  await fetch(`http://localhost:3000/items/${id}`, {
-    method: "DELETE"
-  });
-
-  // Recharge la liste depuis le serveur
-  await loadItems();
-
-  // Fermer l'édition si elle concernait l'élément supprimé
-  const editForm = document.getElementById('editForm');
-  if (editForm.dataset.editingId == id) {
-    editForm.innerHTML = '';
-    editForm.dataset.editingId = '';
+  function normalize(str) {
+    return (str || '')
+      .toString()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim();
   }
 
-  applyFilter();
-}
+  function renderItems(list = items) {
+    const container = document.getElementById('items');
+    container.innerHTML = '';
+    document.getElementById('countInfo').textContent = `(${list.length} affiché(s) / ${items.length} total)`;
 
-    function editItem(id) {
-      const item = items.find(i => i.id === id);
-      const editForm = document.getElementById('editForm');
-      editForm.dataset.editingId = id;
-      editForm.innerHTML = `
-        <h3>Modifier l'article</h3>
-        <input id="editName" placeholder="Nom" value="${item.name}">
-        <input id="editSupplier" placeholder="Fournisseur" value="${item.supplier}">
-        <input id="editPrice" type="number" step="0.01" placeholder="Prix (€)" value="${item.price}">
-        <input id="editQuantity" type="number" placeholder="Quantité" value="${item.quantity}">
-        <input id="editCode" placeholder="Code QR ou identifiant" value="${item.code || ''}"> <!-- ✅ nouveau champ -->
-        <button onclick="saveEdit(${id})">✅ Sauvegarder</button>
-        <button onclick="cancelEdit()">❌ Annuler</button>
-              `;
+    if (list.length === 0) {
+      container.innerHTML = '<p>Aucun article en stock</p>';
+    } else {
+      list.forEach(item => {
+        container.innerHTML += `
+          <div class="item">
+            <div class="info">
+              <strong>${item.name}</strong> — Fournisseur: ${item.supplier}<br>
+              Prix: ${Number(item.price).toFixed(2)} € • Stock: ${item.quantity}
+            </div>
+            <div>
+              <button onclick="editItem(${item.id})">✏️ Modifier</button>
+              <button onclick="deleteItem(${item.id})">🗑️ Supprimer</button>
+            </div>
+          </div>`;
+      });
     }
+  }
 
-    // ✅ Sauvegarder les modifications
-  function saveEdit(id) {
+  function applyFilter() {
+    const q = normalize(currentFilter);
+    if (!q) {
+      renderItems(items);
+      return;
+    }
+    const filtered = items.filter(i =>
+      normalize(i.name).includes(q) ||
+      normalize(i.supplier).includes(q)
+    );
+    renderItems(filtered);
+  }
+
+  // ✅ Ajout via API
+  async function addCustomItem() {
+    const newItem = {
+      name: document.getElementById('name').value || 'Article',
+      supplier: document.getElementById('supplier').value || 'Inconnu',
+      price: parseFloat(document.getElementById('price').value) || 0,
+      quantity: parseInt(document.getElementById('quantity').value) || 0,
+      code: document.getElementById('code').value || ''
+    };
+
+    await fetch("http://localhost:3000/items", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newItem)
+    });
+
+    // reset form
+    document.getElementById('name').value = '';
+    document.getElementById('supplier').value = '';
+    document.getElementById('price').value = '';
+    document.getElementById('quantity').value = '';
+    document.getElementById('code').value = '';
+
+    await loadItems();
+  }
+
+  // ✅ Suppression via API
+  async function deleteItem(id) {
+    await fetch(`http://localhost:3000/items/${id}`, { method: "DELETE" });
+    await loadItems();
+    const editForm = document.getElementById('editForm');
+    if (editForm.dataset.editingId == id) {
+      editForm.innerHTML = '';
+      editForm.dataset.editingId = '';
+    }
+    applyFilter();
+  }
+
+  function editItem(id) {
+    const item = items.find(i => i.id === id);
+    const editForm = document.getElementById('editForm');
+    editForm.dataset.editingId = id;
+    editForm.innerHTML = `
+      <h3>Modifier l'article</h3>
+      <input id="editName" placeholder="Nom" value="${item.name}">
+      <input id="editSupplier" placeholder="Fournisseur" value="${item.supplier}">
+      <input id="editPrice" type="number" step="0.01" placeholder="Prix (€)" value="${item.price}">
+      <input id="editQuantity" type="number" placeholder="Quantité" value="${item.quantity}">
+      <input id="editCode" placeholder="Code QR ou identifiant" value="${item.code || ''}">
+      <button onclick="saveEdit(${id})">✅ Sauvegarder</button>
+      <button onclick="cancelEdit()">❌ Annuler</button>
+    `;
+  }
+
+  async function saveEdit(id) {
     const updated = {
       name: document.getElementById('editName').value,
       supplier: document.getElementById('editSupplier').value,
@@ -157,147 +153,45 @@
       code: document.getElementById('editCode').value || ''
     };
 
-    updateItem(id, updated);
-  }
-
- // 🔄 Envoyer la mise à jour à l’API
-  async function updateItem(id, updated) {
     await fetch(`http://localhost:3000/items/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(updated)
     });
 
-    await loadItems();   // recharge la liste depuis le serveur
-    cancelEdit();        // ferme le formulaire
-    applyFilter();       // réapplique la recherche courante
+    await loadItems();
+    cancelEdit();
+    applyFilter();
   }
 
-  // ❌ Fermer le formulaire d’édition
   function cancelEdit() {
     const editForm = document.getElementById('editForm');
     editForm.innerHTML = '';
     editForm.dataset.editingId = '';
   }
-  
 
+  // ✅ Chargement initial
+  async function loadItems() {
+    const res = await fetch("http://localhost:3000/items");
+    items = await res.json();
+    applyFilter();
+  }
 
-    function cancelEdit() {
-      const editForm = document.getElementById('editForm');
-      editForm.innerHTML = '';
-      editForm.dataset.editingId = '';
-    }
-
-  async function saveItems(newItem) {
-  await fetch("http://localhost:3000/items", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(newItem)
-  });
-  loadItems(); // recharge la liste après ajout
-}
-async function loadItems() {
-  const res = await fetch("http://localhost:3000/items");
-  items = await res.json(); // récupère tous les articles depuis la base
-  applyFilter(); // garde ta logique de filtre
-}
-   
-function exportPDF() {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-
-  doc.setFontSize(16);
-  doc.text("Inventaire StockApp", 10, 10);
-
-  let y = 20;
-  items.forEach(i => {
-    doc.text(
-      `${i.name} — Fournisseur: ${i.supplier} | Prix: ${i.price.toFixed(2)} € | Stock: ${i.quantity}`,
-      10,
-      y
-    );
-    y += 10;
+  // Recherche dynamique
+  document.getElementById('search').addEventListener('input', (e) => {
+    currentFilter = e.target.value;
+    applyFilter();
   });
 
-  doc.save("inventaire.pdf");
-}
-    // Recherche dynamique: écoute l'input et filtre en direct
-    document.getElementById('search').addEventListener('input', (e) => {
-      currentFilter = e.target.value;
-      applyFilter();
-    });
+  // Charger au démarrage
+  loadItems();
 
-    let qrScanner;
-    let scannerActive = false;
-
-
-function startScanner() {
-  if (!qrScanner) {
-    qrScanner = new Html5Qrcode("reader");
+  // Service Worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('service-worker.js')
+      .then(() => console.log("Service Worker enregistré"))
+      .catch(err => console.error("Erreur SW:", err));
   }
-  if (!scannerActive) {
-    qrScanner.start(
-      { facingMode: "environment" },
-      { fps: 10, qrbox: 250 },
-      onScanSuccess
-    ).then(() => {
-      scannerActive = true;
-    });
-  }
-}
-function onScanSuccess(decodedText, decodedResult) {
-  // Cherche d'abord si l'article existe déjà
-  const item = items.find(i =>
-    i.id.toString() === decodedText ||
-    i.name === decodedText ||
-    i.supplier === decodedText ||
-    i.code === decodedText
-  );
-
-  if (item) {
-    // ✅ Ouvre directement en mode modification
-    editItem(item.id);
-  } else {
-    // Sinon, si on est en ajout/édition, remplir le champ code
-    const codeField = document.getElementById('code') || document.getElementById('editCode');
-    if (codeField) {
-      codeField.value = decodedText;
-      alert("Code QR lié au nouvel article !");
-    } else {
-      alert("Article non trouvé !");
-    }
-  }
-
-  // ✅ Arrêt propre du scanner
-  if (qrScanner && scannerActive) {
-    qrScanner.stop()
-      .then(() => {
-        console.log("Scanner arrêté");
-        scannerActive = false;
-      })
-      .catch(err => console.error("Erreur lors de l'arrêt du scanner:", err));
-  }
-}
-
-
-
-
-
-function saveQuantity(id) {
-  const item = items.find(i => i.id === id);
-  item.quantity = parseInt(document.getElementById('editQuantity').value);
-  saveItems();
-  renderItems();
-  cancelEdit();
-}
-    // Charger au démarrage
-    loadItems();
-// ✅ Enregistrement du service worker
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('service-worker.js')
-        .then(() => console.log("Service Worker enregistré"))
-        .catch(err => console.error("Erreur SW:", err));
-    }
 let deferredPrompt;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();

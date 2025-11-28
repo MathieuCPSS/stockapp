@@ -1,12 +1,14 @@
 const express = require("express");
-const sqlite3 = require("sqlite3").verbose();
 const cors = require("cors");
+const sqlite3 = require("sqlite3").verbose();
 
 const app = express();
-app.use(express.json());
-app.use(cors());
+const port = process.env.PORT || 3000;
 
-// Base SQLite
+app.use(cors());
+app.use(express.json());
+
+// Connexion à la base SQLite
 const db = new sqlite3.Database("stock.db");
 
 // Création de la table si elle n'existe pas
@@ -19,46 +21,36 @@ db.run(`CREATE TABLE IF NOT EXISTS items (
   code TEXT
 )`);
 
-// Récupérer tous les articles
+// Route GET /items
 app.get("/items", (req, res) => {
   db.all("SELECT * FROM items", [], (err, rows) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(rows);
+    if (err) {
+      console.error("Erreur SELECT:", err);
+      res.status(500).json({ error: "Erreur serveur" });
+    } else {
+      res.json(rows);
+    }
   });
 });
 
-// Ajouter un article
+// Route POST /items
 app.post("/items", (req, res) => {
   const { name, supplier, price, quantity, code } = req.body;
   db.run(
-    "INSERT INTO items (name, supplier, price, quantity, code) VALUES (?, ?, ?, ?, ?)",
+    `INSERT INTO items (name, supplier, price, quantity, code) VALUES (?, ?, ?, ?, ?)`,
     [name, supplier, price, quantity, code],
     function (err) {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json({ id: this.lastID });
+      if (err) {
+        console.error("Erreur INSERT:", err);
+        res.status(500).json({ error: "Erreur serveur" });
+      } else {
+        res.json({ id: this.lastID });
+      }
     }
   );
 });
 
-// Modifier un article
-app.put("/items/:id", (req, res) => {
-  const { name, supplier, price, quantity, code } = req.body;
-  db.run(
-    "UPDATE items SET name=?, supplier=?, price=?, quantity=?, code=? WHERE id=?",
-    [name, supplier, price, quantity, code, req.params.id],
-    function (err) {
-      if (err) return res.status(500).json({ error: err.message });
-      res.json({ updated: this.changes });
-    }
-  );
+// Démarrage du serveur
+app.listen(port, () => {
+  console.log(`Serveur lancé sur le port ${port}`);
 });
-
-// Supprimer un article
-app.delete("/items/:id", (req, res) => {
-  db.run("DELETE FROM items WHERE id=?", [req.params.id], function (err) {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json({ deleted: this.changes });
-  });
-});
-
-app.listen(3000, () => console.log("✅ API démarrée sur http://localhost:3000"));
