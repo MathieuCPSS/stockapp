@@ -100,8 +100,7 @@ const API_URL = "https://stockapp-backend-w2fn.onrender.com";
       code: document.getElementById('code').value || ''
     };
 
-    await fetch(`${API_URL}/items`)
-, {
+    await fetch(`${API_URL}/items`), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(newItem)
@@ -177,7 +176,31 @@ const API_URL = "https://stockapp-backend-w2fn.onrender.com";
     items = await res.json();
     applyFilter();
   }
+function startScanner() {
+  const qrReader = new Html5Qrcode("reader");
 
+  qrReader.start(
+    { facingMode: "environment" }, // caméra arrière sur mobile
+    {
+      fps: 10,
+      qrbox: 250
+    },
+    qrCodeMessage => {
+      console.log("✅ Code scanné :", qrCodeMessage);
+      // Remplir automatiquement le champ "code"
+      document.getElementById("code").value = qrCodeMessage;
+      // Arrêter le scanner après lecture
+      qrReader.stop().then(() => {
+        console.log("Scanner arrêté");
+      }).catch(err => console.error("Erreur arrêt scanner:", err));
+    },
+    errorMessage => {
+      // erreurs silencieuses (ex: pas de QR détecté)
+    }
+  ).catch(err => {
+    console.error("❌ Erreur scanner :", err);
+  });
+}
   // Recherche dynamique
   document.getElementById('search').addEventListener('input', (e) => {
     currentFilter = e.target.value;
