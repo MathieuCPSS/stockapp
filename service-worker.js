@@ -1,10 +1,13 @@
 const CACHE_NAME = "stockapp"; // nom fixe
 const FILES_TO_CACHE = [
-  "/", 
-  "/stock.html",
-  "/manifest.json",
-  "/favicon.ico"
-  // ajoute ici les autres fichiers nécessaires
+  "/stockapp/",
+  "/stockapp/index.html",
+  "/stockapp/stock.html",
+  "/stockapp/manifest.json",
+  "/stockapp/favicon.ico",
+  "/stockapp/icon-192.png",
+  "/stockapp/icon-512.png",
+  "/stockapp/service-worker.js"
 ];
 
 // Installation : met en cache les fichiers en les téléchargeant à chaque fois
@@ -13,11 +16,11 @@ self.addEventListener("install", event => {
     caches.open(CACHE_NAME).then(cache =>
       Promise.all(
         FILES_TO_CACHE.map(url =>
-          fetch(url).then(response => {
-            if (response.ok) {
-              return cache.put(url, response);
-            }
-          })
+        fetch(new Request(url)).then(response => {
+  if (response.ok) {
+    return cache.put(url, response);
+  }
+})
         )
       )
     )

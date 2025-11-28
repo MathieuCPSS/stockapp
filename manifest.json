@@ -1,8 +1,8 @@
 {
   "name": "Inventaire StockApp",
   "short_name": "StockApp",
-  "start_url": "/stock.html",
-  "scope": "/",
+  "start_url": "/stockapp/stock.html",
+  "scope": "/stockapp/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#4B0082",
