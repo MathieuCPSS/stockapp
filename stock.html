@@ -100,11 +100,11 @@ const API_URL = "https://stockapp-backend-w2fn.onrender.com";
       code: document.getElementById('code').value || ''
     };
 
-    await fetch(`${API_URL}/items`), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newItem)
-    };
+   await fetch(`${API_URL}/items`, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(newItem)
+});
 
     // reset form
     document.getElementById('name').value = '';
