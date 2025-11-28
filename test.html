@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Rapport CPSS — Base Étendue</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f0f0;
+      padding: 20px;
+    }
+    .a4-page {
+      background: white;
+      padding: 20px;
+      max-width: 800px;
+      margin: auto;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+    #descriptif {
+      border: 1px solid #ccc;
+      padding: 10px;
+      min-height: 100px;
+      margin-bottom: 20px;
+    }
+    input[type="number"], input[type="date"], input[type="time"] {
+      width: 120px;
+      font-size: 14px;
+      margin-right: 10px;
+    }
+    .resultat {
+      font-weight: bold;
+      font-size: 16px;
+      color: #333;
+      margin-top: 5px;
+      display: block;
+    }
+    button {
+      margin: 10px;
+      padding: 6px 12px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="a4-page">
+  <h2>Rapport CPSS</h2>
+
+  <p><strong>Descriptif :</strong></p>
+  <div id="descriptif" contenteditable="true">Tape ici ton texte</div>
+
+  <p><strong>Valeurs :</strong></p>
+  <input id="valeur1" type="number" placeholder="Valeur 1">
+  <input id="valeur2" type="number" placeholder="Valeur 2">
+  <span id="total" class="resultat">Total : 0</span>
+
+  <p><strong>Date :</strong></p>
+  <input id="date" type="date">
+  <span id="resultat-date" class="resultat">Jour : —</span>
+
+  <p><strong>Heure :</strong></p>
+  <input id="heure" type="time">
+  <span id="resultat-time" class="resultat">Depuis minuit : —</span>
+
+  <div style="margin-top:20px;">
+    <button onclick="sauvegarderRapport()">💾 Sauvegarder</button>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("Script chargé !");
+
+  const champ1 = document.getElementById("valeur1");
+  const champ2 = document.getElementById("valeur2");
+  const champTotal = document.getElementById("total");
+
+  const champDate = document.getElementById("date");
+  const champResultatDate = document.getElementById("resultat-date");
+
+  const champHeure = document.getElementById("heure");
+  const champResultatTime = document.getElementById("resultat-time");
+
+  function calculerTotal() {
+    const v1 = parseFloat(champ1.value) || 0;
+    const v2 = parseFloat(champ2.value) || 0;
+    champTotal.textContent = "Total : " + (v1 + v2);
+  }
+
+  function afficherJour() {
+    const val = champDate.value;
+    if (val) {
+      const jour = new Date(val).toLocaleDateString("fr-FR", { weekday: "long" });
+      champResultatDate.textContent = "Jour : " + jour;
+    } else {
+      champResultatDate.textContent = "Jour : —";
+    }
+  }
+
+  function afficherTempsDepuisMinuit() {
+    const val = champHeure.value;
+    if (val) {
+      const t = new Date("1970-01-01T" + val);
+      const minutes = t.getHours() * 60 + t.getMinutes();
+      champResultatTime.textContent = `Depuis minuit : ${Math.floor(minutes / 60)}h ${minutes % 60}min`;
+    } else {
+      champResultatTime.textContent = "Depuis minuit : —";
+    }
+  }
+
+  champ1.addEventListener("input", calculerTotal);
+  champ2.addEventListener("input", calculerTotal);
+  champDate.addEventListener("input", afficherJour);
+  champHeure.addEventListener("input", afficherTempsDepuisMinuit);
+
+  window.sauvegarderRapport = function() {
+    console.log("Sauvegarde appelée !");
+    const data = {
+      descriptif: document.getElementById("descriptif").innerHTML,
+      valeur1: champ1.value,
+      valeur2: champ2.value,
+      date: champDate.value,
+      heure: champHeure.value
+    };
+    localStorage.setItem("rapportCPSS", JSON.stringify(data));
+    alert("Sauvegarde réussie !");
+  };
+
+  const data = JSON.parse(localStorage.getItem("rapportCPSS"));
+  if (data) {
+    document.getElementById("descriptif").innerHTML = data.descriptif || "";
+    champ1.value = data.valeur1 || "";
+    champ2.value = data.valeur2 || "";
+    champDate.value = data.date || "";
+    champHeure.value = data.heure || "";
+
+    calculerTotal();
+    afficherJour();
+    afficherTempsDepuisMinuit();
+  }
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Rapport d'intervention CPSS</title>
+  <style>
+    /* Ton CSS complet ici — déjà intégré dans ton message précédent */
+    /* Je peux te le renvoyer à part si tu veux le séparer dans un fichier .css */
+  </style>
+</head>
+<body>
+
+<!-- Page 1 -->
+<div class="a4-page">
+  <!-- Logo, en-tête, client, tableau, totaux, pièces, signature -->
+  <!-- ... (tout ton HTML page 1 ici, inchangé) ... -->
+</div>
+
+<!-- Page 2 -->
+<div class="a4-page" style="margin-top:40px;">
+  <div class="section">
+    <p><strong>Descriptif :</strong></p>
+  </div>
+  <div id="descriptif" contenteditable="true" style="border:1px solid #ccc; padding:10px; min-height:100px;"></div>
+</div>
+
+<!-- Boutons -->
+<div style="text-align:center; margin-top:20px;">
+  <button onclick="sauvegarderRapport()">💾 Sauvegarder</button>
+  <button onclick="restaurerRapport()">📂 Restaurer</button>
+  <button onclick="exporterPDF()">📄 Exporter en PDF</button>
+</div>
+
+<!-- Librairies PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const canvas = document.getElementById("signatureCanvas");
+  const ctx = canvas?.getContext("2d");
+  let drawing = false;
+
+  if (canvas && ctx) {
+    const getPos = e => {
+      if (e.touches) return { x: e.touches[0].clientX - canvas.offsetLeft, y: e.touches[0].clientY - canvas.offsetTop };
+      return { x: e.clientX - canvas.offsetLeft, y: e.clientY - canvas.offsetTop };
+    };
+
+    canvas.addEventListener("mousedown", e => {
+      drawing = true;
+      const p = getPos(e);
+      ctx.beginPath();
+      ctx.moveTo(p.x, p.y);
+    });
+
+    canvas.addEventListener("mousemove", e => {
+      if (!drawing) return;
+      e.preventDefault();
+      const p = getPos(e);
+      ctx.lineTo(p.x, p.y);
+      ctx.strokeStyle = "#000";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    });
+
+    canvas.addEventListener("mouseup", () => {
+      drawing = false;
+      ctx.closePath();
+    });
+
+    canvas.addEventListener("touchstart", e => {
+      drawing = true;
+      const p = getPos(e);
+      ctx.beginPath();
+      ctx.moveTo(p.x, p.y);
+    }, { passive: false });
+
+    canvas.addEventListener("touchmove", e => {
+      if (!drawing) return;
+      e.preventDefault();
+      const p = getPos(e);
+      ctx.lineTo(p.x, p.y);
+      ctx.strokeStyle = "#000";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }, { passive: false });
+
+    canvas.addEventListener("touchend", () => {
+      drawing = false;
+      ctx.closePath();
+    });
+
+    window.clearCanvas = () => ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+
+  document.getElementById('descriptif').addEventListener('paste', function(e) {
+    e.preventDefault();
+    const text = (e.clipboardData || window.clipboardData).getData('text');
+    document.execCommand('insertText', false, text);
+  });
+
+  ["input", "change", "blur", "keyup", "keydown", "paste"].forEach(evt => {
+    document.querySelectorAll(".km, .repas, .hotel, .trajet-heures, .trajet-minutes, .debut, .pause, .fin").forEach(input => {
+      input.addEventListener(evt, calculerTotauxEtTemps);
+    });
+  });
+
+  if (localStorage.getItem("rapportCPSS")) {
+    restaurerRapport();
+  }
+});
+
+function calculerTotauxEtTemps() {
+  let totalKm = 0, totalRepas = 0, totalHotel = 0;
+  let totalMinutesTravail = 0, totalMinutesTrajet = 0;
+
+  document.querySelectorAll("tr.ligne-saisie").forEach(ligne => {
+    const km = parseFloat(ligne.querySelector(".km")?.value || "0");
+    const repas = parseFloat(ligne.querySelector(".repas")?.value || "0");
+    const hotel = parseFloat(ligne.querySelector(".hotel")?.value || "0");
+    const hTrajet = parseInt(ligne.querySelector(".trajet-heures")?.value || "0");
+    const mTrajet = parseInt(ligne.querySelector(".trajet-minutes")?.value || "0");
+
+    totalKm += km;
+    totalRepas += repas;
+    totalHotel += hotel;
+    totalMinutesTrajet += hTrajet * 60 + mTrajet;
+
+    const debut = ligne.querySelector(".debut")?.value;
+    const pause = ligne.querySelector(".pause")?.value;
+    const fin = ligne.querySelector(".fin")?.value;
+
+    if (debut && fin) {
+      const tDebut = new Date("1970-01-01T" + debut);
+      const tFin = new Date("1970-01-01T" + fin);
+      const tPause = pause ? new Date("1970-01-01T" + pause) : new Date("1970-01-01T00:00");
+      const minutesTravail = (tFin - tDebut - (tPause - new Date("1970-01-01T00:00"))) / 60000;
+      totalMinutesTravail += Math.max(0, minutesTravail);
+    }
+  });
+
+  document.getElementById("total-km").value = totalKm;
+  document.getElementById("total-repas").value = totalRepas;
+  document.getElementById("total-hotel").value = totalHotel;
+
+  document.getElementById("total-temps").value = `${Math.floor(totalMinutesTravail / 60)}h ${Math.round(totalMinutesTravail % 60)}min`;
+  document.getElementById("total-trajet").value = `${Math.floor(totalMinutesTrajet / 60)}h ${Math.round(totalMinutesTrajet % 60)}min`;
+}
+
+window.sauvegarderRapport = function() {
+  const data = {
+    descriptif: document.getElementById("descriptif").innerHTML,
+    lignes: []
+  };
+
+  document.querySelectorAll("tr.ligne-saisie").forEach(tr => {
+    const ligne = {
+      date: tr.querySelector('input[type="date"]')?.value || "",
+      h: tr.querySelector('.trajet-heures')?.value || "",
+      m: tr.querySelector('.trajet-minutes')?.value || "",
+      debut: tr.querySelector('.debut')?.value || "",
+      pause: tr.querySelector('.pause')?.value || "",
+      fin: tr.querySelector('.fin')?.value || "",
+      km: tr.querySelector('.km')?.value || "",
+      repas: tr.querySelector('.repas')?.value || "",
+      hotel: tr.querySelector('.hotel')?.value || ""
+    };
+    data.lignes.push(ligne);
+  });
+
+  localStorage.setItem("rapportCPSS", JSON.stringify(data));
+  alert("Rapport sauvegardé !");
+};
+
+function restaurerRapport() {
+  const data = JSON.parse(localStorage.getItem("rapportCPSS"));
+  if (!data) return alert("Aucune sauvegarde trouvée.");
+
+  const lignes = document.querySelectorAll("tr.ligne-saisie");
+  data.lignes.forEach((ligne, i) => {
+    const tr = lignes[i];
+    if (!tr) return;
+    tr.querySelector('input[type="date"]')?.value = ligne.date;
+    tr.querySelector('.trajet-heures')?.value = ligne.h;
+    tr.querySelector('.trajet-minutes')?.value = ligne.m;
+    tr.querySelector('.debut')?.value = ligne.debut;
+    tr.querySelector('.pause')?.value = ligne.pause;
+    tr.querySelector('.fin')?.value = ligne.fin;
+    tr.querySelector('.km')?.value = ligne.km;
+    tr.querySelector('.repas')?.value = ligne.repas;
+    tr.querySelector('.hotel')?.value = ligne.hotel;
+  });
+
+  document.getElementById("descriptif").innerHTML = data.descriptif;
+  calculerTotauxEtTemps();
+}
+
+function exporterPDF() {
+  const boutonEffacer = document.querySelector('.no-print');
+    if (boutonEffacer) boutonEffacer.style.display = 'none';
+
+  const { jsPDF } = window.jspdf;
+  const pages = document.querySelectorAll('.a4-page');
+  const pdf = new jsPDF('p', 'mm', 'a4');
+  let index = 0;
+
+  function renderNextPage() {
+    html2canvas(pages[index], { scale: 2, useCORS: true }).then(canvas => {
+      const imgData = canvas.toDataURL('image/jpeg', 1.0);
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+
+      pdf.addImage(imgData, 'JPEG', 0, 0, pageWidth, pageHeight);
+
+      index++;
+      if (index < pages.length) {
+        pdf.addPage();
+        renderNextPage();
+      } else {
+        pdf.save("rapport.pdf");
+        if (boutonEffacer) boutonEffacer.style.display = '';
+      }
+    });
+  }
+
+  renderNextPage();
+}
+</script>
+</body>
+</html>
