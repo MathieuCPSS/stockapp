@@ -32,6 +32,7 @@
     <input id="search" placeholder="Rechercher (nom ou fournisseur)…">
     <span class="muted" id="countInfo"></span>
     <input id="code" placeholder="Code QR ou identifiant">
+    <input id="newMaletteId" placeholder="ID Mallette"> <!-- ✅ nouveau champ -->
   </div>
 
   <h2>Articles en stock</h2>
@@ -97,7 +98,8 @@ const API_URL = "https://stockapp-backend-w2fn.onrender.com";
     supplier: document.getElementById('supplier').value || 'Inconnu',
     price: parseFloat(document.getElementById('price').value) || 0,
     quantity: parseInt(document.getElementById('quantity').value) || 0,
-    code: document.getElementById('code').value || ''
+    code: document.getElementById('code').value || '',
+    maletteId: document.getElementById('newMaletteId').value // ✅ nouveau champ
   };
 
   console.log("➡️ POST /items payload:", newItem);
@@ -159,6 +161,7 @@ const API_URL = "https://stockapp-backend-w2fn.onrender.com";
       <input id="editPrice" type="number" step="0.01" placeholder="Prix (€)" value="${item.price}">
       <input id="editQuantity" type="number" placeholder="Quantité" value="${item.quantity}">
       <input id="editCode" placeholder="Code QR ou identifiant" value="${item.code || ''}">
+      <input id="editMaletteId" placeholder="ID Mallette" value="${item.maletteId || ''}">
       <button onclick="saveEdit(${id})">✅ Sauvegarder</button>
       <button onclick="cancelEdit()">❌ Annuler</button>
     `;
@@ -170,7 +173,8 @@ const API_URL = "https://stockapp-backend-w2fn.onrender.com";
       supplier: document.getElementById('editSupplier').value,
       price: parseFloat(document.getElementById('editPrice').value) || 0,
       quantity: parseInt(document.getElementById('editQuantity').value) || 0,
-      code: document.getElementById('editCode').value || ''
+      code: document.getElementById('editCode').value || '',
+      maletteId: document.getElementById('editMaletteId').value // ✅ nouveau champ
     };
 
     await fetch(`${API_URL}/items/${id}`, {
