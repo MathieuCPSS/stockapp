@@ -36,6 +36,16 @@ app.get("/items", (req, res) => {
   });
 });
 
+app.get("/test-db", async (req, res) => {
+  try {
+    const result = await pool.query("SELECT NOW()");
+    res.json({ success: true, time: result.rows[0].now });
+  } catch (err) {
+    console.error("Erreur de connexion PostgreSQL :", err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // POST /items
 app.post("/items", (req, res) => {
   const { name, supplier, price, quantity, code } = req.body;
