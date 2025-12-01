@@ -67,7 +67,9 @@ const API_URL = "https://stockapp-backend-w2fn.onrender.com";
           <div class="item">
             <div class="info">
               <strong>${item.name}</strong> — Fournisseur: ${item.supplier}<br>
-              Prix: ${Number(item.price).toFixed(2)} € • Stock: ${item.quantity}
+              Prix: ${Number(item.price).toFixed(2)} € • Stock: ${item.quantity}<br>
+              Code: ${item.code || '—'}
+            
             </div>
             <div>
               <button onclick="editItem(${item.id})">✏️ Modifier</button>
@@ -86,7 +88,9 @@ const API_URL = "https://stockapp-backend-w2fn.onrender.com";
     }
     const filtered = items.filter(i =>
       normalize(i.name).includes(q) ||
-      normalize(i.supplier).includes(q)
+      normalize(i.supplier).includes(q) ||
+      normalize(i.code).includes(q)
+
     );
     renderItems(filtered);
   }
