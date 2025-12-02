@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Rapport d'intervention CPSS</title>
+  <style>
+.logo-container {
+  position: relative;
+  margin-bottom: 10px;
+}
+
+.logo {
+  width: 120px;
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+   gap: 20px;
+  margin-bottom: 10px;
+}
+
+.header-text {
+  flex: 1;
+  text-align: center;
+
+}
+
+.header-text h2 {
+  margin: 0;
+  font-size: 18pt;
+}
+
+.header-text p {
+  margin: 0;
+  font-size: 10pt;
+  line-height: 1.4;
+}
+    body {
+
+      font-family: Arial, sans-serif;
+      background: #eee;
+      padding: 20px;
+    }
+
+    .a4-page {
+      width: 210mm;
+      height: 297mm;
+      margin: auto;
+      padding: 20mm;
+      background: white;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+      page-break-after: always;
+      display: flex;
+      flex-direction: column;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      margin-bottom: 6px;
+      font-size: 10pt;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 1px 3px;
+      line-height: 1;
+      height: 24px;
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    input[type="date"],
+    input[type="time"],
+    input[type="number"],
+    input[type="text"] {
+      height: 20px;
+      font-size: 10pt;
+      padding: 0 2px;
+      margin: 0;
+      box-sizing: border-box;
+      width: 95%;
+    }
+input {
+  text-align: center;
+}
+
+    textarea {
+      width: 95%;
+      font-size: 10pt;
+    }
+
+    .section {
+      margin-top: 12px;
+    }
+
+    #descriptif {
+      flex: 1;
+      width: 100%;
+      border: none;
+      padding: 0;
+      margin-top: 6px;
+      font-size: 11pt;
+      line-height: 1.4;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      resize: none;
+      overflow: visible;
+    }
+
+    canvas {
+      max-width: 100%;
+      height: auto;
+      touch-action: none;
+    }
+
+    @media print {
+      @page {
+        size: A4;
+        margin: 20mm;
+      }
+
+      body {
+        background: white;
+        padding: 0;
+        font-size: 12pt;
+      }
+
+      .a4-page {
+        box-shadow: none;
+        margin: 0;
+        padding: 20mm;
+      }
+
+      input, textarea, #descriptif {
+        border: none;
+        background: none;
+        font-size: 12pt;
+      }
+
+      .no-print {
+        display: none !important;
+      }
+
+
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Page 1 -->
+<div class="a4-page">
+  <!-- En-tête CPSS -->
+  <div class="header">
+    <div class="logo-container">
+  <img src="logo.png" alt="Test logo">
+    </div>
+    <div class="header-text">
+      <h2>CPSS</h2>
+      <p>
+        11 rue de la Durance - 67100 Strasbourg<br>
+        Tel: 03 88 93 10 01 - Fax: 03 88 89 27 78<br>
+        contact@cpsseurope.com
+      </p>
+    </div>
+  </div>
+
+  <!-- Bloc intervention + client -->
+  <div class="section">
+    <table>
+      <tr>
+        <td style="width:30%; vertical-align:top;">
+          <strong>Type d’intervention :</strong>
+          <table style="margin-top:6px;">
+            <tr><td><input type="checkbox" id="install"></td><td><label for="install">Installation</label></td></tr>
+            <tr><td><input type="checkbox" id="depannage"></td><td><label for="depannage">Dépannage</label></td></tr>
+            <tr><td><input type="checkbox" id="entretien"></td><td><label for="entretien">Entretien</label></td></tr>
+            <tr><td><input type="checkbox" id="visite"></td><td><label for="visite">Visite préventive</label></td></tr>
+          </table>
+        </td>
+        <td style="width:70%; vertical-align:top;">
+          <strong>Société :</strong><br><input type="text"><br><br>
+          <strong>Adresse :</strong><br><input type="text"><br><br>
+          <strong>Nom du contact :</strong><br><input type="text">
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- Tableau de trajets -->
+  <div class="section">
+    <table>
+      <tr style="background:#f0f0f0;">
+        <th>Date</th>
+        <th style="width:100px;">Trajet</th>
+        <th style="width:100px;">Début</th>
+        <th style="width:100px;">Pause</th>
+        <th style="width:100px;">Fin</th>
+        <th style="width:80px;">Km</th>
+        <th style="width:40px;">Repas</th>
+        <th style="width:40px;">Hôtel</th>
+      </tr>
+
+      <!-- 7 lignes de saisie -->
+<tr class="ligne-saisie">
+  <td><input type="date"></td>
+  <td>
+    <input type="number" name="heures" class="trajet-heures" min="0" max="24" placeholder="h" style="width:40px;">
+    <input type="number" name="minutes" class="trajet-minutes" min="0" max="59" placeholder="min" style="width:40px;">
+  </td>
+  <td><input type="time" class="debut"></td>
+  <td><input type="time" class="pause"></td>
+  <td><input type="time" class="fin"></td>
+  <td><input type="number" class="km"></td>
+  <td><input type="number" class="repas"></td>
+  <td><input type="number" class="hotel"></td>
+</tr>
+<tr class="ligne-saisie">
+  <td><input type="date"></td>
+  <td>
+    <input type="number" name="heures" class="trajet-heures" min="0" max="24" placeholder="h" style="width:40px;">
+    <input type="number" name="minutes" class="trajet-minutes" min="0" max="59" placeholder="min" style="width:40px;">
+  </td>
+  <td><input type="time" class="debut"></td>
+  <td><input type="time" class="pause"></td>
+  <td><input type="time" class="fin"></td>
+  <td><input type="number" class="km"></td>
+  <td><input type="number" class="repas"></td>
+  <td><input type="number" class="hotel"></td>
+</tr>
+<tr class="ligne-saisie">
+  <td><input type="date"></td>
+  <td>
+    <input type="number" name="heures" class="trajet-heures" min="0" max="24" placeholder="h" style="width:40px;">
+    <input type="number" name="minutes" class="trajet-minutes" min="0" max="59" placeholder="min" style="width:40px;">
+  </td>
+  <td><input type="time" class="debut"></td>
+  <td><input type="time" class="pause"></td>
+  <td><input type="time" class="fin"></td>
+  <td><input type="number" class="km"></td>
+  <td><input type="number" class="repas"></td>
+  <td><input type="number" class="hotel"></td>
+</tr>
+<tr class="ligne-saisie">
+  <td><input type="date"></td>
+  <td>
+    <input type="number" name="heures" class="trajet-heures" min="0" max="24" placeholder="h" style="width:40px;">
+    <input type="number" name="minutes" class="trajet-minutes" min="0" max="59" placeholder="min" style="width:40px;">
+  </td>
+  <td><input type="time" class="debut"></td>
+  <td><input type="time" class="pause"></td>
+  <td><input type="time" class="fin"></td>
+  <td><input type="number" class="km"></td>
+  <td><input type="number" class="repas"></td>
+  <td><input type="number" class="hotel"></td>
+</tr>
+<tr class="ligne-saisie">
+  <td><input type="date"></td>
+  <td>
+    <input type="number" name="heures" class="trajet-heures" min="0" max="24" placeholder="h" style="width:40px;">
+    <input type="number" name="minutes" class="trajet-minutes" min="0" max="59" placeholder="min" style="width:40px;">
+  </td>
+  <td><input type="time" class="debut"></td>
+  <td><input type="time" class="pause"></td>
+  <td><input type="time" class="fin"></td>
+  <td><input type="number" class="km"></td>
+  <td><input type="number" class="repas"></td>
+  <td><input type="number" class="hotel"></td>
+</tr>
+<tr class="ligne-saisie">
+  <td><input type="date"></td>
+  <td>
+    <input type="number" name="heures" class="trajet-heures" min="0" max="24" placeholder="h" style="width:40px;">
+    <input type="number" name="minutes" class="trajet-minutes" min="0" max="59" placeholder="min" style="width:40px;">
+  </td>
+  <td><input type="time" class="debut"></td>
+  <td><input type="time" class="pause"></td>
+  <td><input type="time" class="fin"></td>
+  <td><input type="number" class="km"></td>
+  <td><input type="number" class="repas"></td>
+  <td><input type="number" class="hotel"></td>
+</tr>
+<tr class="ligne-saisie">
+  <td><input type="date"></td>
+  <td>
+    <input type="number" name="heures" class="trajet-heures" min="0" max="24" placeholder="h" style="width:40px;">
+    <input type="number" name="minutes" class="trajet-minutes" min="0" max="59" placeholder="min" style="width:40px;">
+  </td>
+  <td><input type="time" class="debut"></td>
+  <td><input type="time" class="pause"></td>
+  <td><input type="time" class="fin"></td>
+  <td><input type="number" class="km"></td>
+  <td><input type="number" class="repas"></td>
+  <td><input type="number" class="hotel"></td>
+</tr>
+
+
+      <!-- Ligne de total -->
+  <tr style="background:#f9f9f9; font-weight:bold;">
+  <td style="text-align:right;">Total :</td>
+  <td><input type="text" id="total-trajet" readonly></td>
+  <td colspan="3"><input type="text" id="total-temps" readonly></td>
+  <td><input type="number" id="total-km" readonly></td>
+  <td><input type="number" id="total-repas" readonly></td>
+  <td><input type="number" id="total-hotel" readonly></td>
+</tr>
+    </table>
+  </div>
+
+  <!-- Pièces changées / à changer -->
+  <div class="section">
+    <p><strong>Pièces changées :</strong><br><textarea rows="2"></textarea></p>
+    <p><strong>Pièces à changer :</strong><br><textarea rows="2"></textarea></p>
+  </div>
+
+  <!-- Signature -->
+  <div class="section">
+    <p><strong>Date :</strong></p>
+    <input type="date" id="date-signature">
+
+    <p style="margin-top:12px;"><strong>Signature du client :</strong></p>
+<canvas id="signatureCanvas" width="500" height="200" style="border:2px solid #444; background:#fff;"></canvas><br>
+<button class="no-print" onclick="clearCanvas()">🧼 Effacer</button>
+  </div>
+</div>
+
+  <!-- Page 2 -->
+  <div class="a4-page" style="margin-top:40px;">
+    <div class="section">
+      <p><strong>Descriptif :</strong></p>
+    </div>
+    <div id="descriptif" contenteditable="true"></div>
+  </div>
+<div style="text-align:center; margin-top:20px;">
+  <button onclick="exporterPDF()">📄 Exporter en PDF</button>
+  <button onclick="sauvegarderDonnees()" class="no-print">💾 Sauvegarder</button>
+  <button onclick="restaurerDonnees()" class="no-print">🔄 Restaurer</button>
+  <button onclick="viderDonnees()" class="no-print">🧹 Vierge</button>
+</div>
+  <!-- Scripts -->
+<!-- Librairie html2pdf -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+function exporterPDF() {
+  const boutonEffacer = document.querySelector('.no-print');
+  boutonEffacer.style.display = 'none'; // Masquer le bouton
+
+  const { jsPDF } = window.jspdf;
+  const pages = document.querySelectorAll('.a4-page');
+  const pdf = new jsPDF('p', 'mm', 'a4');
+  let index = 0;
+
+  function renderNextPage() {
+    html2canvas(pages[index], {
+      scale: 2,
+      useCORS: true
+    }).then(canvas => {
+      const imgData = canvas.toDataURL('image/jpeg', 1.0);
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+
+      pdf.addImage(imgData, 'JPEG', 0, 0, pageWidth, pageHeight);
+
+      index++;
+      if (index < pages.length) {
+        pdf.addPage();
+        renderNextPage();
+      } else {
+        pdf.save("rapport.pdf");
+        boutonEffacer.style.display = ''; // Réafficher le bouton
+      }
+    });
+  }
+
+  renderNextPage();
+}
+</script>
+
+
+  <script>
+    document.getElementById('descriptif').addEventListener('paste', function(e) {
+      e.preventDefault();
+      const text = (e.clipboardData || window.clipboardData).getData('text');
+      document.execCommand('insertText', false, text);
+    });
+
+    function calculerTotauxEtTemps() {
+      let totalKm = 0, totalRepas = 0, totalHotel = 0;
+      let totalMinutesTravail = 0;
+      let totalMinutesTrajet = 0;
+
+      document.querySelectorAll("tr").forEach(ligne => {
+        const km = ligne.querySelector(".km")?.value;
+        const repas = ligne.querySelector(".repas")?.value;
+        const hotel = ligne.querySelector(".hotel")?.value;
+        const hTrajet = parseInt(ligne.querySelector(".trajet-heures")?.value || "0");
+        const mTrajet = parseInt(ligne.querySelector(".trajet-minutes")?.value || "0");
+        const minutesTrajet = hTrajet * 60 + mTrajet;
+        totalMinutesTrajet += Math.max(0, minutesTrajet);
+
+        if (km && !isNaN(parseFloat(km))) totalKm += parseFloat(km);
+        if (repas && !isNaN(parseFloat(repas))) totalRepas += parseFloat(repas);
+        if (hotel && !isNaN(parseFloat(hotel))) totalHotel += parseFloat(hotel);
+
+        const debut = ligne.querySelector(".debut")?.value;
+        const pause = ligne.querySelector(".pause")?.value;
+        const fin = ligne.querySelector(".fin")?.value;
+
+        if (debut && fin) {
+          const tDebut = new Date("1970-01-01T" + debut);
+          const tFin = new Date("1970-01-01T" + fin);
+          const tPause = pause ? new Date("1970-01-01T" + pause) : new Date("1970-01-01T00:00");
+
+          const minutesTravail = (tFin - tDebut - (tPause - new Date("1970-01-01T00:00"))) / 60000;
+          totalMinutesTravail += Math.max(0, minutesTravail);
+        }
+      });
+
+      document.getElementById("total-km").value = totalKm;
+      document.getElementById("total-repas").value = totalRepas;
+      document.getElementById("total-hotel").value = totalHotel;
+
+      const hTravail = Math.floor(totalMinutesTravail / 60);
+      const mTravail = Math.round(totalMinutesTravail % 60);
+      document.getElementById("total-temps").value = `${hTravail}h ${mTravail}min`;
+
+      const hTrajet = Math.floor(totalMinutesTrajet / 60);
+      const mTrajet = Math.round(totalMinutesTrajet % 60);
+      document.getElementById("total-trajet").value = `${hTrajet}h ${mTrajet}min`;
+    }
+
+    ["input", "change", "blur", "keyup", "keydown", "paste"].forEach(evt => {
+      document.querySelectorAll(".km, .repas, .hotel, .trajet-heures, .trajet-minutes, .debut, .pause, .fin").forEach(input => {
+        input.addEventListener(evt, calculerTotauxEtTemps);
+      });
+    });
+
+    // Sauvegarde et restauration des données
+    function getAllInputs() {
+      return Array.from(document.querySelectorAll('input, textarea, #descriptif'));
+    }
+
+    function sauvegarderDonnees() {
+      const donnees = {};
+      getAllInputs().forEach((el, i) => {
+        if (el.type === 'checkbox') {
+          donnees[el.id || i] = el.checked;
+        } else if (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT') {
+          donnees[el.id || el.name || i] = el.value;
+        } else if (el.id === 'descriptif') {
+          donnees['descriptif'] = el.innerHTML;
+        }
+      });
+      // Sauvegarde la signature
+      const canvas = document.getElementById('signatureCanvas');
+      if (canvas) {
+        donnees['signature'] = canvas.toDataURL();
+      }
+      localStorage.setItem('rapportCPSS', JSON.stringify(donnees));
+      alert('Données sauvegardées !');
+    }
+
+    function restaurerDonnees() {
+      const donnees = JSON.parse(localStorage.getItem('rapportCPSS') || '{}');
+      getAllInputs().forEach((el, i) => {
+        if (el.type === 'checkbox') {
+          el.checked = !!donnees[el.id || i];
+        } else if (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT') {
+          el.value = donnees[el.id || el.name || i] || '';
+        } else if (el.id === 'descriptif') {
+          el.innerHTML = donnees['descriptif'] || '';
+        }
+      });
+      // Restaure la signature
+      const canvas = document.getElementById('signatureCanvas');
+      if (canvas && donnees['signature']) {
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        img.onload = function() {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0);
+        };
+        img.src = donnees['signature'];
+      }
+      calculerTotauxEtTemps();
+      alert('Données restaurées !');
+    }
+
+    function viderDonnees() {
+      getAllInputs().forEach((el, i) => {
+        if (el.type === 'checkbox') {
+          el.checked = false;
+        } else if (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT') {
+          el.value = '';
+        } else if (el.id === 'descriptif') {
+          el.innerHTML = '';
+        }
+      });
+      // Efface la signature
+      const canvas = document.getElementById('signatureCanvas');
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+      calculerTotauxEtTemps();
+      alert('Formulaire vierge !');
+    }
+
+    // Restaure automatiquement si des données existent
+    window.addEventListener('load', () => {
+      if (localStorage.getItem('rapportCPSS')) {
+        restaurerDonnees();
+      }
+    });
+  </script>
+<script>
+window.addEventListener("load", () => {
+  const canvas = document.getElementById("signatureCanvas");
+  const ctx = canvas.getContext("2d");
+  let drawing = false;
+
+  const getPos = e => {
+    if (e.touches) return { x: e.touches[0].clientX - canvas.offsetLeft, y: e.touches[0].clientY - canvas.offsetTop };
+    return { x: e.clientX - canvas.offsetLeft, y: e.clientY - canvas.offsetTop };
+  };
+
+  const startDraw = e => { drawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); };
+  const draw = e => {
+    if (!drawing) return;
+    e.preventDefault();
+    const p = getPos(e);
+    ctx.lineTo(p.x, p.y);
+    ctx.strokeStyle = "#000";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  };
+  const endDraw = () => { drawing = false; ctx.closePath(); };
+
+  canvas.addEventListener("mousedown", startDraw);
+  canvas.addEventListener("mousemove", draw);
+  canvas.addEventListener("mouseup", endDraw);
+  canvas.addEventListener("mouseout", endDraw);
+  canvas.addEventListener("touchstart", startDraw, { passive: false });
+  canvas.addEventListener("touchmove", draw, { passive: false });
+  canvas.addEventListener("touchend", endDraw);
+
+  window.clearCanvas = () => ctx.clearRect(0, 0, canvas.width, canvas.height);
+});
+</script>
+
+
+
+</body>
+</html>

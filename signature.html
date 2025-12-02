@@ -2,222 +2,63 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Test Modale A4</title>
+  <title>Signature</title>
   <style>
-    body {
-      margin: 0;
-      padding: 0;
-      background: #eee;
-      font-family: Arial, sans-serif;
-      overflow-x: hidden;
-    }
-
-    .a4-page {
-      width: 210mm;
-      height: 297mm;
-      margin-left: auto;
-      margin-right: auto;
-      padding: 20mm;
-      background: white;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
-      page-break-after: always;
-      display: block;
-    }
-
-    .a4-page * {
-      max-width: 100%;
-      box-sizing: border-box;
-    }
-
-    #signatureCanvas {
-      border: 1px solid #ccc;
-      background: #fff;
-      width: 500px;
-      height: 200px;
-      display: block;
-      margin: 12px auto;
-    }
-
-    #descriptif {
-      display: block;
-      width: 100%;
-      margin-top: 6px;
-      font-size: 11pt;
-      line-height: 1.4;
-      white-space: pre-wrap;
-      word-wrap: break-word;
-      resize: none;
-      overflow-wrap: break-word;
-    }
-
-    .no-print {
-      text-align: center;
-      margin-top: 20px;
-    }
-
-    .modal {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.5);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 9999;
-    }
-
-    .modal-content {
-      background: white;
-      padding: 20px;
-      border-radius: 6px;
-      text-align: center;
-    }
-
-    #modalCanvas {
-      border: 2px solid #444;
-      background: #fff;
-      width: 500px;
-      height: 200px;
-      display: block;
-      margin: 12px auto;
-    }
-
-    @media print {
-      .no-print,
-      .modal,
-      .modal-content,
-      #modalCanvas,
-      #signatureModal {
-        display: none !important;
-      }
-
-      #signatureCanvas {
-        border: none !important;
-      }
-
-      .a4-page {
-        box-shadow: none;
-        margin: 0;
-        padding: 20mm;
-      }
-    }
+    body { font-family: sans-serif; text-align: center; background: #f2f2f2; margin: 0; }
+    canvas { border: 2px solid #444; background: #fff; touch-action: none; }
+    .btns { margin-top: 10px; }
+    button { padding: 10px 20px; margin: 5px; font-size: 16px; }
   </style>
 </head>
 <body>
-
-  <!-- Page 1 -->
-  <div class="a4-page">
-    <h2>Page 1</h2>
-    <p>Signature du client :</p>
-    <canvas id="signatureCanvas"></canvas>
-    <button onclick="openSignatureModal()">✍️ Signer</button>
+  <h2>Veuillez signer ci-dessous 🖋️</h2>
+  <canvas id="signatureCanvas" width="300" height="150"></canvas>
+  <div class="btns">
+    <button onclick="clearCanvas()">Effacer</button>
+    <button onclick="saveSignature()">Valider</button>
   </div>
-
-  <!-- Page 2 -->
-  <div class="a4-page">
-    <h2>Page 2</h2>
-    <p><strong>Descriptif :</strong></p>
-    <div id="descriptif" contenteditable="true">Zone de texte libre</div>
-
-    <div class="no-print">
-      <button onclick="exporterPDF()">📄 Exporter en PDF</button>
-      <button onclick="sauvegarderDonnees()">💾 Sauvegarder</button>
-      <button onclick="restaurerDonnees()">🔄 Restaurer</button>
-      <button onclick="viderDonnees()">🧹 Vierge</button>
-    </div>
-  </div>
-
-  <!-- Modale de signature -->
-  <div id="signatureModal" class="modal">
-    <div class="modal-content">
-      <h3>Signer ici</h3>
-      <canvas id="modalCanvas" width="500" height="200"></canvas>
-      <button onclick="clearModalCanvas()">Effacer</button>
-      <button onclick="validateSignature()">Valider</button>
-      <button onclick="closeSignatureModal()">Annuler</button>
-    </div>
-  </div>
-
-  <!-- Librairies PDF -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
   <script>
-    const modal = document.getElementById("signatureModal");
-    const modalCanvas = document.getElementById("modalCanvas");
-    const modalCtx = modalCanvas.getContext("2d");
+    const canvas = document.getElementById("signatureCanvas");
+    const ctx = canvas.getContext("2d");
     let drawing = false;
 
-    modalCanvas.addEventListener("mousedown", () => drawing = true);
-    modalCanvas.addEventListener("mouseup", () => drawing = false);
-    modalCanvas.addEventListener("mousemove", draw);
-    modalCanvas.addEventListener("touchstart", () => drawing = true);
-    modalCanvas.addEventListener("touchend", () => drawing = false);
-    modalCanvas.addEventListener("touchmove", drawTouch);
+    const getPos = e => {
+      if (e.touches) return { x: e.touches[0].clientX - canvas.offsetLeft, y: e.touches[0].clientY - canvas.offsetTop };
+      return { x: e.clientX - canvas.offsetLeft, y: e.clientY - canvas.offsetTop };
+    };
 
-    function draw(e) {
+    const startDraw = e => { drawing = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); };
+    const draw = e => {
       if (!drawing) return;
-      const rect = modalCanvas.getBoundingClientRect();
-      modalCtx.lineWidth = 2;
-      modalCtx.lineCap = "round";
-      modalCtx.strokeStyle = "#000";
-      modalCtx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
-      modalCtx.stroke();
-      modalCtx.beginPath();
-      modalCtx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+      e.preventDefault();
+      const p = getPos(e);
+      ctx.lineTo(p.x, p.y);
+      ctx.strokeStyle = "#000";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    };
+    const endDraw = () => { drawing = false; ctx.closePath(); };
+
+    canvas.addEventListener("mousedown", startDraw);
+    canvas.addEventListener("mousemove", draw);
+    canvas.addEventListener("mouseup", endDraw);
+    canvas.addEventListener("mouseout", endDraw);
+
+    canvas.addEventListener("touchstart", startDraw, { passive: false });
+    canvas.addEventListener("touchmove", draw, { passive: false });
+    canvas.addEventListener("touchend", endDraw);
+
+    function clearCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
 
-    function drawTouch(e) {
-      if (!drawing) return;
-      const touch = e.touches[0];
-      const rect = modalCanvas.getBoundingClientRect();
-      modalCtx.lineWidth = 2;
-      modalCtx.lineCap = "round";
-      modalCtx.strokeStyle = "#000";
-      modalCtx.lineTo(touch.clientX - rect.left, touch.clientY - rect.top);
-      modalCtx.stroke();
-      modalCtx.beginPath();
-      modalCtx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
-    }
-
-    function clearModalCanvas() {
-      modalCtx.clearRect(0, 0, modalCanvas.width, modalCanvas.height);
-    }
-
-    function openSignatureModal() {
-      modal.style.display = "flex";
-    }
-
-    function closeSignatureModal() {
-      modal.style.display = "none";
-    }
-
-    function validateSignature() {
-      const mainCanvas = document.getElementById("signatureCanvas");
-      const mainCtx = mainCanvas.getContext("2d");
-      const img = new Image();
-      img.onload = () => {
-        mainCtx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
-        mainCtx.drawImage(img, 0, 0);
-      };
-      img.src = modalCanvas.toDataURL();
-      closeSignatureModal();
-    }
-
-    function exporterPDF() {
-      alert("Export PDF simulé ici.");
-    }
-
-    function sauvegarderDonnees() {
-      alert("Sauvegarde simulée.");
-    }
-
-    function restaurerDonnees() {
-      alert("Restauration simulée.");
-    }
-
-    function viderDonnees() {
-      alert("Formulaire vidé.");
+    function saveSignature() {
+      const image = canvas.toDataURL("image/png");
+      const link = document.createElement("a");
+      link.href = image;
+      link.download = "signature.png";
+      link.click();
     }
   </script>
 </body>
