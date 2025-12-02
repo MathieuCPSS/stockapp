@@ -19,6 +19,10 @@ const pool = new Pool({
 });
 
 // --- Routes ---
+app.get("/", (req, res) => {
+  res.send("Backend opérationnel ✅");
+});
+
 // Test de connexion
 app.get("/test-db", async (req, res) => {
   try {
