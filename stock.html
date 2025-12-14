@@ -38,7 +38,7 @@
   <div id="items"></div>
   <div id="editForm"></div>
 <button onclick="exportPDF()">📄 Exporter en PDF</button>
-  <button onclick="saveEdit(${id})">✅ Sauvegarder</button>
+  <button onclick="saveBackupHTML()">💾 Sauvegarder en HTML</button>
   <script>
     let items = [];
     let currentFilter = ''; // garde la requête de recherche courante
@@ -227,17 +227,50 @@ function exportPDF() {
     // Charger au démarrage
     loadItems();
 
-function saveBackupHTML() {
-        const title = 'Inventaire StockApp - Backup';
-        const timestamp = new Date().toISOString();
-        const rows = items.map(i => `
-          <li>
-            <strong>${escapeHtml(i.name)}</strong> — Fournisseur: ${escapeHtml(i.supplier)}<br>
-            Code: ${escapeHtml(i.code || '')} • Prix: ${Number(i.price || 0).toFixed(2)} € • Stock: ${escapeHtml(i.quantity)}
-          </li>`).join('\n');
+function escapeHtml(text) {
+  const map = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  return String(text).replace(/[&<>"']/g, m => map[m]);
+}
 
-        const html = `<!doctype html>
-  <html lang="fr">
+function saveBackupHTML() {
+  const title = 'Inventaire StockApp - Backup';
+  const timestamp = new Date().toLocaleString();
+
+  const rows = items.map(i => `
+    <li>
+      <strong>${escapeHtml(i.name)}</strong> — Fournisseur: ${escapeHtml(i.supplier)}<br>
+      Code: ${escapeHtml(i.code || '')} • Prix: ${Number(i.price || 0).toFixed(2)} € • Stock: ${escapeHtml(i.quantity)}
+    </li>`).join('\n');
+
+  const html = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>${title}</title>
+</head>
+<body>
+  <h1>${title}</h1>
+  <p>Sauvegarde générée le ${timestamp}</p>
+  <ul>
+    ${rows}
+  </ul>
+</body>
+</html>`;
+
+  const blob = new Blob([html], { type: "text/html" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "inventaire_backup.html";
+  a.click();
+  URL.revokeObjectURL(url);
+}
     
   </script>
 </body>
