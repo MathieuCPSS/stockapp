@@ -166,18 +166,7 @@
       applyFilter();
     }
 
-function saveBackupHTML() {
-        const title = 'Inventaire StockApp - Backup';
-        const timestamp = new Date().toISOString();
-        const rows = items.map(i => `
-          <li>
-            <strong>${escapeHtml(i.name)}</strong> — Fournisseur: ${escapeHtml(i.supplier)}<br>
-            Code: ${escapeHtml(i.code || '')} • Prix: ${Number(i.price || 0).toFixed(2)} € • Stock: ${escapeHtml(i.quantity)}
-          </li>`).join('\n');
-
-        const html = `<!doctype html>
-  <html lang="fr">
-    
+   
     function startScanner() {
   const qrReader = new Html5Qrcode("reader");
 
@@ -238,6 +227,18 @@ function exportPDF() {
     // Charger au démarrage
     loadItems();
 
+function saveBackupHTML() {
+        const title = 'Inventaire StockApp - Backup';
+        const timestamp = new Date().toISOString();
+        const rows = items.map(i => `
+          <li>
+            <strong>${escapeHtml(i.name)}</strong> — Fournisseur: ${escapeHtml(i.supplier)}<br>
+            Code: ${escapeHtml(i.code || '')} • Prix: ${Number(i.price || 0).toFixed(2)} € • Stock: ${escapeHtml(i.quantity)}
+          </li>`).join('\n');
+
+        const html = `<!doctype html>
+  <html lang="fr">
+    
   </script>
 </body>
 </html>
