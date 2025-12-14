@@ -38,6 +38,7 @@
   <div id="items"></div>
   <div id="editForm"></div>
 <button onclick="exportPDF()">📄 Exporter en PDF</button>
+  <button onclick="saveEdit(${id})">✅ Sauvegarder</button>
   <script>
     let items = [];
     let currentFilter = ''; // garde la requête de recherche courante
@@ -165,6 +166,18 @@
       applyFilter();
     }
 
+function saveBackupHTML() {
+        const title = 'Inventaire StockApp - Backup';
+        const timestamp = new Date().toISOString();
+        const rows = items.map(i => `
+          <li>
+            <strong>${escapeHtml(i.name)}</strong> — Fournisseur: ${escapeHtml(i.supplier)}<br>
+            Code: ${escapeHtml(i.code || '')} • Prix: ${Number(i.price || 0).toFixed(2)} € • Stock: ${escapeHtml(i.quantity)}
+          </li>`).join('\n');
+
+        const html = `<!doctype html>
+  <html lang="fr">
+    
     function startScanner() {
   const qrReader = new Html5Qrcode("reader");
 
