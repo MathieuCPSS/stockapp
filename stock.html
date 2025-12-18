@@ -66,7 +66,8 @@
             <div class="item">
               <div class="info">
                 <strong>${item.name}</strong> — Fournisseur: ${item.supplier}<br>
-                Prix: ${Number(item.price).toFixed(2)} € • Stock: ${item.quantity}
+                Prix: ${Number(item.price).toFixed(2)} € • Stock: ${item.quantity} • Code: ${item.code || ''}
+
               </div>
               <div>
                 <button onclick="editItem(${item.id})">✏️ Modifier</button>
@@ -98,7 +99,7 @@
         name: document.getElementById('name').value || 'Article',
         supplier: document.getElementById('supplier').value || 'Inconnu',
         price: parseFloat(document.getElementById('price').value) || 0,
-        quantity: parseInt(document.getElementById('quantity').value) || 0
+        quantity: parseInt(document.getElementById('quantity').value) || 0,
         code: document.getElementById('code').value || ''   // 👉 important
 
       };
@@ -135,6 +136,7 @@
         <input id="editSupplier" placeholder="Fournisseur" value="${item.supplier}">
         <input id="editPrice" type="number" step="0.01" placeholder="Prix (€)" value="${item.price}">
         <input id="editQuantity" type="number" placeholder="Quantité" value="${item.quantity}">
+        <input id="editCode" placeholder="Code QR ou identifiant" value="${item.code || ''}">
         <button onclick="saveEdit(${id})">✅ Sauvegarder</button>
         <button onclick="cancelEdit()">❌ Annuler</button>
       `;
@@ -146,6 +148,7 @@
       item.supplier = document.getElementById('editSupplier').value || item.supplier;
       item.price = parseFloat(document.getElementById('editPrice').value) || 0;
       item.quantity = parseInt(document.getElementById('editQuantity').value) || 0;
+      item.code = document.getElementById('editCode').value || item.code;
 
       saveItems();
       cancelEdit(); // ferme le formulaire
