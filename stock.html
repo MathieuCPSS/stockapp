@@ -99,6 +99,8 @@
         supplier: document.getElementById('supplier').value || 'Inconnu',
         price: parseFloat(document.getElementById('price').value) || 0,
         quantity: parseInt(document.getElementById('quantity').value) || 0
+        code: document.getElementById('code').value || ''   // 👉 important
+
       };
       items.push(newItem);
       saveItems();
@@ -190,7 +192,7 @@
             document.getElementById("name").value ||
             document.getElementById("supplier").value ||
             document.getElementById("price").value ||
-            document.getElementById("quantity").value
+            document.getElementById("quantity").value 
           ) {
             // 👉 Cas 2 : on est en train de créer un nouvel article
             document.getElementById("code").value = qrCodeMessage;
