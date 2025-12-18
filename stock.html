@@ -197,7 +197,9 @@ Html5Qrcode.getCameras().then(devices => {
     alert("Aucune caméra détectée sur cet appareil.");
   }
 }).catch(err => console.error("Erreur détection caméras:", err));
+}
 
+      
 function exportPDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
