@@ -169,36 +169,35 @@
    
     function startScanner() {
   const qrReader = new Html5Qrcode("reader");
+// Lister les caméras disponibles
+Html5Qrcode.getCameras().then(devices => {
+  if (devices && devices.length) {
+    console.log("Caméras détectées:", devices);
 
-  // Lister les caméras disponibles
-  Html5Qrcode.getCameras().then(devices => {
-    if (devices && devices.length) {
-      console.log("Caméras détectées:", devices);
+    // Cherche une caméra dont le nom contient "back"
+    const backCam = devices.find(d => d.label.toLowerCase().includes("back")) || devices[0];
 
-      // Choisir la première caméra (ou la caméra arrière si dispo)
-      const cameraId = devices[0].id;
+    qrReader.start(
+      backCam.id,
+      { fps: 10, qrbox: 300 }, // tu peux augmenter qrbox pour améliorer la lecture
+      qrCodeMessage => {
+        console.log("✅ Code scanné :", qrCodeMessage);
+        document.getElementById("code").value = qrCodeMessage;
 
-      qrReader.start(
-        cameraId,
-        { fps: 10, qrbox: 250 },
-        qrCodeMessage => {
-          console.log("✅ Code scanné :", qrCodeMessage);
-          document.getElementById("code").value = qrCodeMessage;
+        // Arrêter le scanner après lecture
+        qrReader.stop().then(() => {
+          console.log("Scanner arrêté");
+        }).catch(err => console.error("Erreur arrêt scanner:", err));
+      },
+      errorMessage => {
+        // erreurs silencieuses (pas de QR détecté)
+      }
+    ).catch(err => console.error("❌ Erreur démarrage caméra:", err));
+  } else {
+    alert("Aucune caméra détectée sur cet appareil.");
+  }
+}).catch(err => console.error("Erreur détection caméras:", err));
 
-          // Arrêter le scanner après lecture
-          qrReader.stop().then(() => {
-            console.log("Scanner arrêté");
-          }).catch(err => console.error("Erreur arrêt scanner:", err));
-        },
-        errorMessage => {
-          // erreurs silencieuses (pas de QR détecté)
-        }
-      ).catch(err => console.error("❌ Erreur démarrage caméra:", err));
-    } else {
-      alert("Aucune caméra détectée sur cet appareil.");
-    }
-  }).catch(err => console.error("Erreur détection caméras:", err));
-}
 function exportPDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
