@@ -179,7 +179,7 @@ Html5Qrcode.getCameras().then(devices => {
 
     qrReader.start(
       backCam.id,
-      { fps: 10, qrbox: 500 }, // tu peux augmenter qrbox pour améliorer la lecture
+      { fps: 10, qrbox: 300 }, // tu peux augmenter qrbox pour améliorer la lecture
       qrCodeMessage => {
         console.log("✅ Code scanné :", qrCodeMessage);
         document.getElementById("code").value = qrCodeMessage;
