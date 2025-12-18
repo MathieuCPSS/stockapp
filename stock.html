@@ -85,7 +85,9 @@
       }
       const filtered = items.filter(i =>
         normalize(i.name).includes(q) ||
-        normalize(i.supplier).includes(q)
+        normalize(i.supplier).includes(q)||
+        normalize(i.code).includes(q)   // 👉 ajout du filtre par code
+                                   
       );
       renderItems(filtered);
     }
