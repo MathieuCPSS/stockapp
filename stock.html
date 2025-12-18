@@ -166,37 +166,51 @@
       applyFilter();
     }
 
-   
-    function startScanner() {
+   function startScanner() {
   const qrReader = new Html5Qrcode("reader");
-// Lister les caméras disponibles
-Html5Qrcode.getCameras().then(devices => {
-  if (devices && devices.length) {
-    console.log("Caméras détectées:", devices);
 
-    // Cherche une caméra dont le nom contient "back"
-    const backCam = devices.find(d => d.label.toLowerCase().includes("back")) || devices[0];
+  Html5Qrcode.getCameras().then(devices => {
+    if (devices && devices.length) {
+      const backCam = devices.find(d => d.label && d.label.toLowerCase().includes("back")) || devices[0];
 
-    qrReader.start(
-      backCam.id,
-      { fps: 10, qrbox: 300 }, // tu peux augmenter qrbox pour améliorer la lecture
-      qrCodeMessage => {
-        console.log("✅ Code scanné :", qrCodeMessage);
-        document.getElementById("code").value = qrCodeMessage;
+      qrReader.start(
+        backCam.id,
+        { fps: 10, qrbox: 300 },
+        qrCodeMessage => {
+          console.log("✅ Code scanné :", qrCodeMessage);
 
-        // Arrêter le scanner après lecture
-        qrReader.stop().then(() => {
-          console.log("Scanner arrêté");
-        }).catch(err => console.error("Erreur arrêt scanner:", err));
-      },
-      errorMessage => {
-        // erreurs silencieuses (pas de QR détecté)
-      }
-    ).catch(err => console.error("❌ Erreur démarrage caméra:", err));
-  } else {
-    alert("Aucune caméra détectée sur cet appareil.");
-  }
-}).catch(err => console.error("Erreur détection caméras:", err));
+          const editForm = document.getElementById("editForm");
+
+          if (editForm.dataset.editingId) {
+            // 👉 Cas 1 : on édite un article existant
+            document.getElementById("editCode").value = qrCodeMessage;
+          } else if (
+            document.getElementById("name").value ||
+            document.getElementById("supplier").value ||
+            document.getElementById("price").value ||
+            document.getElementById("quantity").value
+          ) {
+            // 👉 Cas 2 : on est en train de créer un nouvel article
+            document.getElementById("code").value = qrCodeMessage;
+          } else {
+            // 👉 Cas 3 : aucun formulaire actif → utiliser comme recherche
+            document.getElementById("search").value = qrCodeMessage;
+            currentFilter = qrCodeMessage;
+            applyFilter();
+          }
+
+          qrReader.stop().then(() => {
+            console.log("Scanner arrêté");
+          }).catch(err => console.error("Erreur arrêt scanner:", err));
+        },
+        errorMessage => {
+          // erreurs silencieuses
+        }
+      ).catch(err => console.error("❌ Erreur démarrage caméra:", err));
+    } else {
+      alert("Aucune caméra détectée sur cet appareil.");
+    }
+  }).catch(err => console.error("Erreur détection caméras:", err));
 }
 
       
